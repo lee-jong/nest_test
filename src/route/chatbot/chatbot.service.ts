@@ -15,7 +15,7 @@ export class ChatbotService {
       const projectId = process.env.PROJECT_ID ?? '';
       const sessionId = uuidV4();
       const client_email = process.env.CLIENT_EMAIL;
-      const private_key = process.env.PRIVATE_KEY?.replace(/\\n/g, '\ndd');
+      const private_key = process.env.PRIVATE_KEY?.replace(/\\n/g, '\n');
 
       const sessionClient = new SessionsClient({
         credentials: {
