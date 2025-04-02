@@ -4,8 +4,6 @@ import {
   Body,
   UsePipes,
   ValidationPipe,
-  HttpException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { ChatbotRequestDataDTO } from './chatbot.dto';
 import { ChatbotService } from './chatbot.service';

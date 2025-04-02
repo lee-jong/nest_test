@@ -4,11 +4,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { SessionsClient } from '@google-cloud/dialogflow';
-import {
-  ChatbotRequestDataDTO,
-  ChatbotResTextDataDTO,
-  ChatbotResPayloadDataDTO,
-} from './chatbot.dto';
+import { ChatbotRequestDataDTO, ChatbotResponseDataDTO } from './chatbot.dto';
 import { v4 as uuidV4 } from 'uuid';
 
 @Injectable()
@@ -30,25 +26,29 @@ export class ChatbotService {
     });
   }
 
-  #dialogFlowDataHandler(chatbotData) {
+  async #dialogFlowDataHandler(chatbotData) {
     const [res] = chatbotData;
     if (!res.queryResult) throw new Error();
-    const { fulfillmentMessages, intent } = res.queryResult;
+
+    const { fulfillmentMessages: messages, intent } = res.queryResult;
     const { endInteraction, isFallback } = intent;
 
-    if (!fulfillmentMessages || !fulfillmentMessages.length) throw new Error();
+    if (!messages || !messages.length) throw new Error();
     if (isFallback) {
       // TODO : 답변하지 못 한 메시지 이력 관리
     }
 
-    const message = fulfillmentMessages[0];
-    const isTextData = message.message == 'text';
+    const resData = await Promise.all(
+      messages.map((msg) => {
+        const data = new ChatbotResponseDataDTO(msg).data;
+        return { ...data };
+      }),
+    );
 
-    const data = isTextData
-      ? new ChatbotResTextDataDTO(message)
-      : new ChatbotResPayloadDataDTO(message);
+    // TODO : 메시지 정제
+    // dialogflow에서 제공해주는 템플릿이 많음 - 요구 정의 후, 일관된 데이터로 정제 필요
 
-    return { data, isFallback, endInteraction };
+    return { resData, isFallback, endInteraction };
   }
 
   async getChatbotData(req: ChatbotRequestDataDTO): Promise<any> {
@@ -72,7 +72,7 @@ export class ChatbotService {
       };
 
       // google dialogflow response  data
-      const { data, isFallback, endInteraction } = await this.sessionClient
+      const { resData, isFallback, endInteraction } = await this.sessionClient
         .detectIntent(reqData)
         .then(this.#dialogFlowDataHandler)
         .catch((e) => {
@@ -88,7 +88,7 @@ export class ChatbotService {
 
       return {
         status: 200,
-        data,
+        data: resData,
         sessionPath: endInteraction ? sessionPath : null,
       };
     } catch (e) {
