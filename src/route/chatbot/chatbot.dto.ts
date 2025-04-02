@@ -18,29 +18,30 @@ export class ChatbotRequestDataDTO {
 }
 
 export class ChatbotResponseDataDTO {
-  data = {};
+  data: any = {};
   constructor(msg: FulfillmentMessagesData) {
     if (msg.platform == 'PLATFORM_UNSPECIFIED') {
-      return this.#refineUnspecData(msg);
+      this.#refineUnspecData(msg);
     }
 
     if (msg.platform == 'ACTIONS_ON_GOOGLE') {
-      return this.#refineGAData(msg);
+      this.#refineGAData(msg);
     }
 
     if (msg.platform == 'FACEBOOK') {
-      return this.#refineFBData(msg);
+      this.#refineFBData(msg);
     }
 
-    this.data = msg;
+    // this.data = msg;
   }
 
   #refineUnspecData(msg: FulfillmentMessagesData) {
     const { platform, message: type } = msg;
-    let data: any = { platform, type };
+    this.data = { platform, type };
 
     if (type == 'text') {
-      data.text = msg.text.text[0];
+      this.data.text = msg.text.text[0];
+      return;
     }
 
     if (type == 'payload') {
@@ -48,70 +49,75 @@ export class ChatbotResponseDataDTO {
       const fieldKeys = Object.keys(fields);
       if (fieldKeys.length) {
         fieldKeys.map((key) => {
-          data.payload[key] = fields[key].stringValue;
+          this.data.payload[key] = fields[key].stringValue;
         });
       }
     }
-
-    return data;
   }
 
   #refineGAData(msg: FulfillmentMessagesData) {
     const { platform, message: type } = msg;
-    let data: any = { platform, type };
+    this.data = { platform, type };
 
     if (type == 'simpleResponses') {
       // TODO : TTS 필드 확인
-      data.text = msg.simpleResponses.simpleResponses[0].displayText;
+      this.data.text = msg.simpleResponses.simpleResponses[0].displayText;
+      return;
     }
 
     if (type == 'basicCard') {
-      data.card = msg.basicCard;
+      this.data.card = msg.basicCard;
+      return;
     }
 
     if (type == 'carouselSelect') {
-      data.items = msg.carouselSelect.items;
+      this.data.items = msg.carouselSelect.items;
+      return;
     }
 
     if (type == 'suggestions') {
-      data.sugs = msg.suggestions.suggestions;
+      this.data.sugs = msg.suggestions.suggestions;
+      return;
     }
 
     if (type == 'listSelect') {
-      data.items = msg.listSelect.items;
+      this.data.items = msg.listSelect.items;
+      return;
     }
 
     if (type == 'browseCarouselCard') {
-      data.items = msg.browseCarouselCard.items;
+      this.data.items = msg.browseCarouselCard.items;
+      return;
     }
 
     if (type == 'linkOutSuggestion') {
-      data.sugs = msg.linkOutSuggestion;
+      this.data.sugs = msg.linkOutSuggestion;
+      return;
     }
-
-    return data;
   }
 
   #refineFBData(msg: FulfillmentMessagesData) {
     const { platform, message: type } = msg;
-    let data: any = { platform, type };
+    this.data = { platform, type };
 
     if (type == 'text') {
-      data.text = msg.text.text[0];
+      this.data.text = msg.text.text[0];
+      return;
     }
 
     if (type == 'image') {
-      data.image = msg.image;
+      this.data.image = msg.image;
+      return;
     }
 
     if (type == 'card') {
-      data.items = msg.card;
+      this.data.items = msg.card;
+      return;
     }
 
     if (type == 'quickReplies') {
-      data.rep = msg.quickReplies;
+      this.data.rep = msg.quickReplies;
+      return;
     }
-
-    return data;
   }
 }

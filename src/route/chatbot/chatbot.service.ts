@@ -39,14 +39,15 @@ export class ChatbotService {
     }
 
     const resData = await Promise.all(
+      // TODO : 메시지 정제
       messages.map((msg) => {
         const data = new ChatbotResponseDataDTO(msg).data;
+        console.log('여기', data);
         return { ...data };
       }),
     );
 
-    // TODO : 메시지 정제
-    // dialogflow에서 제공해주는 템플릿이 많음 - 요구 정의 후, 일관된 데이터로 정제 필요
+    console.log('~~~', resData);
 
     return { resData, isFallback, endInteraction };
   }
